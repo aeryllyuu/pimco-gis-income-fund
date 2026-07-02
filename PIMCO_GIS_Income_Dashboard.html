@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIMCO GIS Income Fund — Monthly Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#1f3864; --accent:#2e5a88; --bg:#f4f6f9; --card:#ffffff;
+    --ink:#1a2330; --muted:#6b7785; --line:#e3e8ef; --good:#1a8754; --bad:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+       background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
+  header.top{background:linear-gradient(120deg,var(--navy),var(--accent));color:#fff;
+       border-radius:16px;padding:24px 28px;box-shadow:0 6px 22px rgba(31,56,100,.18)}
+  header.top h1{margin:0;font-size:22px;letter-spacing:.2px}
+  header.top p{margin:6px 0 0;font-size:13px;opacity:.85}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:20px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .card .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .card .val{font-size:28px;font-weight:700;margin-top:6px}
+  .card .dl{font-size:12px;margin-top:4px;color:var(--muted)}
+  .up{color:var(--good)} .dn{color:var(--bad)}
+  section.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;
+       padding:20px 22px;margin:18px 0;box-shadow:0 2px 10px rgba(20,30,50,.04)}
+  .panel h2{margin:0 0 2px;font-size:17px;color:var(--navy)}
+  .panel .sub{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .chartbox{position:relative;height:340px}
+  .toggle{float:right;display:flex;gap:6px}
+  .toggle button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;
+       color:var(--accent);padding:5px 11px;border-radius:8px;cursor:pointer}
+  .toggle button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .note{background:#fff7e6;border:1px solid #f3d28a;border-left:4px solid #e0a92e;
+       border-radius:10px;padding:12px 14px;font-size:13px;color:#6b4e16;margin:14px 0 0}
+  details{margin-top:14px;font-size:13px}
+  details summary{cursor:pointer;color:var(--accent);font-weight:600}
+  table{border-collapse:collapse;width:100%;margin-top:12px;font-size:12px}
+  th,td{border:1px solid var(--line);padding:5px 7px;text-align:center}
+  th{background:#eef2f7;color:var(--navy);position:sticky;top:0}
+  td:first-child,th:first-child{text-align:left;font-weight:600;background:#f8fafc}
+  .tablescroll{overflow:auto;max-height:340px;border-radius:8px}
+  .up-cell{background:#e7f6ee} .dn-cell{background:#fdecea}
+  .delta{font-size:10px;margin-left:4px;color:#5a6b7a;white-space:nowrap}
+  .up-cell .delta{color:#1a8754} .dn-cell .delta{color:#c0392b}
+  .legend{font-size:11.5px;color:var(--muted);margin:10px 0 2px}
+  .legend b{color:#1a8754} .legend i{color:#c0392b;font-style:normal}
+  footer{font-size:11.5px;color:var(--muted);margin-top:24px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>PIMCO GIS Income Fund — Monthly Dashboard</h1>
+    <p>E-Class USD Accumulation · ISIN IE00B7KFL990 · Source: PIMCO monthly reports · 13 months with data (Jan 2025 – Apr 2026)</p>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <section class="panel">
+    <div class="toggle" id="allocToggle">
+      <button data-mode="area" class="on">Composition</button>
+      <button data-mode="line">Lines</button>
+    </div>
+    <h2>Asset Allocation</h2>
+    <p class="sub">% Gross Market Value. Watch Cash &amp; Liquidity (peaked ~17% in Nov-25) and the Agency MBS / Government Related core.</p>
+    <div class="chartbox"><canvas id="allocChart"></canvas></div>
+    <details><summary>Show data table</summary><div class="tablescroll" id="allocTable"></div></details>
+  </section>
+
+  <section class="panel">
+    <h2>Key Statistics</h2>
+    <p class="sub">Effective duration &amp; Estimated Yield-to-Maturity (left axis), YTD return (right axis, resets each calendar year).</p>
+    <div class="chartbox"><canvas id="statChart"></canvas></div>
+    <details><summary>Show data table</summary><div class="tablescroll" id="statTable"></div></details>
+  </section>
+
+  <section class="panel">
+    <div class="toggle" id="qualToggle">
+      <button data-mode="area" class="on">Composition</button>
+      <button data-mode="line">Lines</button>
+    </div>
+    <h2>Credit Quality</h2>
+    <p class="sub">% Market Value, AAA → Below B plus A1/P1 (short-term cash equivalents).</p>
+    <div class="chartbox"><canvas id="qualChart"></canvas></div>
+    <div class="note"><b>Reporting-methodology change from June 2025.</b> PIMCO began including interest-rate-swap notional, which shifts the dominant bucket from AAA (~64% in early 2025) to AA (~58% from Jun-2025). This is a <b>reporting change, not the fund selling AAA bonds</b> — compare within each period, not across the dashed line.</div>
+    <details><summary>Show data table</summary><div class="tablescroll" id="qualTable"></div></details>
+  </section>
+
+  <footer>
+    Figures read from PIMCO GIS Income Fund monthly reports (E-Class USD Acc). Asset-allocation rows are Gross Market Value % and may total 98–101% (PIMCO excludes some notional). Average credit quality was AA- across all months shown. Months without a published report (Apr-25, May-25, Dec-25) are omitted from the axis. Not investment advice.
+  </footer>
+</div>
+
+<script>
+const months=["Jan-25","Feb-25","Mar-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Jan-26","Feb-26","Mar-26","Apr-26"];
+const methIdx=3; // first month under new methodology (Jun-25)
+
+const stats={
+  duration:[4.61,3.99,3.96,5.13,5.38,5.25,5.21,4.98,4.82,5.19,5.15,6.25,6.29],
+  ytm:[7.25,6.98,7.24,6.55,6.51,6.31,6.25,6.11,6.07,6.29,6.05,6.90,7.00],
+  ytd:[1.05,2.83,3.02,4.86,4.86,6.46,7.26,8.49,9.23,0.51,1.57,-0.96,-0.11]
+};
+const allocLabels=["Government Related","Agency MBS","Securitized (non-Agcy)","Investment Grade Credit","High Yield","Bank Loan","Emerging Markets","Cash & Liquidity","Other"];
+const alloc=[
+ [17,35,16,15,4,1,5,5,1],[16,35,17,14,4,1,5,7,1],[16,34,15,15,4,1,5,7,1],
+ [15,34,17,14,5,1,6,8,0],[17,33,15,13,5,1,6,9,0],[14,35,15,12,4,1,6,12,0],
+ [14,33,15,12,4,1,5,15,0],[14,36,15,12,4,1,5,14,0],[12,35,14,12,4,1,6,17,0],
+ [13,37,13,12,5,1,6,11,0],[13,36,14,12,5,1,6,12,0],[14,36,13,12,5,1,6,12,0],
+ [14,36,14,14,5,1,7,9,0]];
+const qualLabels=["AAA","AA","A","BAA","BB","B","Below B","A1/P1"];
+const qual=[
+ [64,8,7,10,3,4,3,1],[64,8,7,9,3,4,4,1],[64,8,7,10,4,2,4,1],
+ [15,57,6,9,4,2,4,2],[14,59,6,9,4,2,3,2],[17,59,5,9,4,1,3,1],
+ [17,59,5,9,4,1,3,1],[15,61,6,8,3,2,3,2],[17,59,6,8,3,2,3,1],
+ [16,59,6,8,5,1,3,1],[16,58,6,8,5,1,3,2],[17,57,7,8,5,1,3,2],
+ [14,58,7,9,6,1,3,2]];
+
+const palette=["#1f3864","#3f76b5","#7bb0e0","#1a8754","#7fc29b","#b9a44a","#d98a3d","#9aa7b5","#c0392b"];
+const qpal=["#1f3864","#3f76b5","#7bb0e0","#2e8b6f","#88c4a6","#e0b54a","#dd8a3a","#b24a4a"];
+const col=(i,p)=>p[i%p.length];
+
+// ---- cards ----
+function arrow(cur,prev,unit,inv){
+  const d=cur-prev, s=d>=0?"▲":"▼";
+  const cls=(inv?d<0:d>0)?"up":(d===0?"":"dn");
+  return `<span class="${cls}">${s} ${Math.abs(d).toFixed(unit==='%'?2:2)}${unit}</span> vs prior`;
+}
+const n=months.length-1, p=n-1;
+const cardData=[
+  {lbl:"Latest month",val:months[n],dl:"PIMCO report as of month-end"},
+  {lbl:"Effective Duration",val:stats.duration[n].toFixed(2)+" yrs",dl:arrow(stats.duration[n],stats.duration[p]," yrs")},
+  {lbl:"Estimated YTM",val:stats.ytm[n].toFixed(2)+"%",dl:arrow(stats.ytm[n],stats.ytm[p],"%")},
+  {lbl:"YTD Return",val:stats.ytd[n].toFixed(2)+"%",dl:"net of fees, 2026 YTD"},
+  {lbl:"Cash & Liquidity",val:alloc[n][7]+"%",dl:arrow(alloc[n][7],alloc[p][7],"%",true)},
+  {lbl:"Avg Credit Quality",val:"AA-",dl:"stable across period"}
+];
+document.getElementById("cards").innerHTML=cardData.map(c=>
+  `<div class="card"><div class="lbl">${c.lbl}</div><div class="val">${c.val}</div><div class="dl">${c.dl}</div></div>`).join("");
+
+// ---- generic stacked/line chart ----
+function makeStack(canvasId,labels,matrix,pal){
+  const ds=labels.map((lab,i)=>({
+    label:lab,
+    data:matrix.map(r=>r[i]),
+    backgroundColor:col(i,pal),borderColor:col(i,pal),
+    borderWidth:1.4,fill:true,pointRadius:0,tension:.25
+  }));
+  return new Chart(document.getElementById(canvasId),{
+    type:"line",
+    data:{labels:months,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}%`}}},
+      scales:{y:{stacked:true,title:{display:true,text:"% of Fund"},ticks:{callback:v=>v+"%"}},
+        x:{grid:{display:false}}}}
+  });
+}
+function setStack(chart,on){
+  chart.options.scales.y.stacked=on;
+  chart.data.datasets.forEach(d=>{d.fill=on; d.borderWidth=on?1.4:2;});
+  chart.update();
+}
+
+const allocChart=makeStack("allocChart",allocLabels,alloc,palette);
+const qualChart=makeStack("qualChart",qualLabels,qual,qpal);
+
+// methodology divider on quality chart
+const vline={id:"vline",afterDraw(c){
+  const x=c.scales.x.getPixelForValue(months[methIdx]);
+  const{top,bottom}=c.chartArea;const ctx=c.ctx;ctx.save();
+  ctx.strokeStyle="#c0392b";ctx.setLineDash([5,4]);ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+  ctx.fillStyle="#c0392b";ctx.font="11px Arial";ctx.setLineDash([]);
+  ctx.fillText("methodology change",x+4,top+12);ctx.restore();
+}};
+Chart.register(vline);
+qualChart.update();
+
+// ---- key stats: dual axis ----
+new Chart(document.getElementById("statChart"),{
+  data:{labels:months,datasets:[
+    {type:"line",label:"Effective Duration (yrs)",data:stats.duration,yAxisID:"y",
+      borderColor:"#1f3864",backgroundColor:"#1f3864",tension:.25,pointRadius:3,borderWidth:2.5},
+    {type:"line",label:"Estimated YTM (%)",data:stats.ytm,yAxisID:"y",
+      borderColor:"#d98a3d",backgroundColor:"#d98a3d",tension:.25,pointRadius:3,borderWidth:2.5},
+    {type:"bar",label:"YTD Return (%)",data:stats.ytd,yAxisID:"y1",
+      backgroundColor:stats.ytd.map(v=>v>=0?"rgba(63,118,181,.45)":"rgba(192,57,43,.45)"),
+      borderColor:"rgba(0,0,0,0)"}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    interaction:{mode:"index",intersect:false},
+    plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:11}}}},
+    scales:{
+      y:{position:"left",title:{display:true,text:"Years  /  YTM %"}},
+      y1:{position:"right",title:{display:true,text:"YTD Return %"},grid:{drawOnChartArea:false}},
+      x:{grid:{display:false}}}}
+});
+
+// ---- toggles ----
+function bindToggle(id,chart){
+  document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");setStack(chart,b.dataset.mode==="area");
+  });
+}
+bindToggle("allocToggle",allocChart);
+bindToggle("qualToggle",qualChart);
+
+// ---- tables ----
+function buildTable(elId,labels,matrix,total){
+  let h='<div class="legend">Cells highlight month-over-month change: <b>▲ increase</b> / <i>▼ decrease</i> (no tint = unchanged). First month has no prior to compare.</div>';
+  h+="<table><thead><tr><th>Month</th>"+labels.map(l=>`<th>${l}</th>`).join("")+(total?"<th>Total</th>":"")+"</tr></thead><tbody>";
+  matrix.forEach((row,r)=>{
+    const sum=row.reduce((a,b)=>a+b,0);
+    const cells=row.map((v,c)=>{
+      if(r===0) return `<td>${v}%</td>`;
+      const d=v-matrix[r-1][c];
+      if(d===0) return `<td>${v}%</td>`;
+      const cls=d>0?"up-cell":"dn-cell";
+      return `<td class="${cls}">${v}%<span class="delta">${d>0?"▲":"▼"}${Math.abs(d)}</span></td>`;
+    }).join("");
+    h+=`<tr><td>${months[r]}</td>`+cells+(total?`<td>${sum}%</td>`:"")+"</tr>";
+  });
+  document.getElementById(elId).innerHTML=h+"</tbody></table>";
+}
+buildTable("allocTable",allocLabels,alloc,true);
+buildTable("qualTable",qualLabels,qual,true);
+// stats table
+(function(){
+  let h="<table><thead><tr><th>Month</th><th>Duration (yrs)</th><th>Est. YTM (%)</th><th>YTD Return (%)</th><th>Avg Quality</th></tr></thead><tbody>";
+  months.forEach((m,i)=>{h+=`<tr><td>${m}</td><td>${stats.duration[i].toFixed(2)}</td><td>${stats.ytm[i].toFixed(2)}</td><td>${stats.ytd[i].toFixed(2)}</td><td>AA-</td></tr>`;});
+  document.getElementById("statTable").innerHTML=h+"</tbody></table>";
+})();
+</script>
+</body>
+</html>
