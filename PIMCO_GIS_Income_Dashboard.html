@@ -54,7 +54,7 @@
 <div class="wrap">
   <header class="top">
     <h1>PIMCO GIS Income Fund — Monthly Dashboard</h1>
-    <p>E-Class USD Accumulation · ISIN IE00B7KFL990 · Source: PIMCO monthly reports · 13 months with data (Jan 2025 – Apr 2026)</p>
+    <p>E-Class USD Accumulation · ISIN IE00B7KFL990 · Source: PIMCO monthly reports · 15 months with data (Jan 2025 – Apr 2026)</p>
   </header>
 
   <div class="cards" id="cards"></div>
@@ -85,36 +85,40 @@
     <h2>Credit Quality</h2>
     <p class="sub">% Market Value, AAA → Below B plus A1/P1 (short-term cash equivalents).</p>
     <div class="chartbox"><canvas id="qualChart"></canvas></div>
-    <div class="note"><b>Reporting-methodology change from June 2025.</b> PIMCO began including interest-rate-swap notional, which shifts the dominant bucket from AAA (~64% in early 2025) to AA (~58% from Jun-2025). This is a <b>reporting change, not the fund selling AAA bonds</b> — compare within each period, not across the dashed line.</div>
+    <div class="note"><b>Reporting-methodology change in mid-2025.</b> PIMCO began including interest-rate-swap notional; the dominant bucket flips from AAA (~64% in early 2025) to AA (~58%), first appearing in the May 2025 report. This is a <b>reporting change, not the fund selling AAA bonds</b> — compare within each period, not across the dashed line.</div>
     <details><summary>Show data table</summary><div class="tablescroll" id="qualTable"></div></details>
   </section>
 
   <footer>
-    Figures read from PIMCO GIS Income Fund monthly reports (E-Class USD Acc). Asset-allocation rows are Gross Market Value % and may total 98–101% (PIMCO excludes some notional). Average credit quality was AA- across all months shown. Months without a published report (Apr-25, May-25, Dec-25) are omitted from the axis. Not investment advice.
+    Figures read from PIMCO GIS Income Fund monthly reports (E-Class USD Acc). Asset-allocation rows are Gross Market Value % and may total 98–101% (PIMCO excludes some notional). Average credit quality was AA- across all months shown. Months without a published report (Apr-25) are omitted from the axis. Not investment advice.
   </footer>
 </div>
 
 <script>
-const months=["Jan-25","Feb-25","Mar-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Jan-26","Feb-26","Mar-26","Apr-26"];
-const methIdx=3; // first month under new methodology (Jun-25)
+const months=["Jan-25","Feb-25","Mar-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26"];
+const methIdx=3; // first month under new (AA-dominant) reporting basis (May-25)
 
 const stats={
-  duration:[4.61,3.99,3.96,5.13,5.38,5.25,5.21,4.98,4.82,5.19,5.15,6.25,6.29],
-  ytm:[7.25,6.98,7.24,6.55,6.51,6.31,6.25,6.11,6.07,6.29,6.05,6.90,7.00],
-  ytd:[1.05,2.83,3.02,4.86,4.86,6.46,7.26,8.49,9.23,0.51,1.57,-0.96,-0.11]
+  duration:[4.61,3.99,3.96,5.42,5.13,5.38,5.25,5.21,4.98,4.82,4.90,5.19,5.15,6.25,6.29],
+  ytm:[7.25,6.98,7.24,6.90,6.55,6.51,6.31,6.25,6.11,6.07,6.25,6.29,6.05,6.90,7.00],
+  ytd:[1.05,2.83,3.02,2.83,4.86,4.86,6.46,7.26,8.49,9.23,9.54,0.51,1.57,-0.96,-0.11]
 };
 const allocLabels=["Government Related","Agency MBS","Securitized (non-Agcy)","Investment Grade Credit","High Yield","Bank Loan","Emerging Markets","Cash & Liquidity","Other"];
 const alloc=[
  [17,35,16,15,4,1,5,5,1],[16,35,17,14,4,1,5,7,1],[16,34,15,15,4,1,5,7,1],
+ [15,34,17,14,5,1,6,9,0],
  [15,34,17,14,5,1,6,8,0],[17,33,15,13,5,1,6,9,0],[14,35,15,12,4,1,6,12,0],
  [14,33,15,12,4,1,5,15,0],[14,36,15,12,4,1,5,14,0],[12,35,14,12,4,1,6,17,0],
+ [13,36,14,12,4,1,6,14,0],
  [13,37,13,12,5,1,6,11,0],[13,36,14,12,5,1,6,12,0],[14,36,13,12,5,1,6,12,0],
  [14,36,14,14,5,1,7,9,0]];
 const qualLabels=["AAA","AA","A","BAA","BB","B","Below B","A1/P1"];
 const qual=[
  [64,8,7,10,3,4,3,1],[64,8,7,9,3,4,4,1],[64,8,7,10,4,2,4,1],
+ [15,58,6,9,4,2,4,2],
  [15,57,6,9,4,2,4,2],[14,59,6,9,4,2,3,2],[17,59,5,9,4,1,3,1],
  [17,59,5,9,4,1,3,1],[15,61,6,8,3,2,3,2],[17,59,6,8,3,2,3,1],
+ [19,57,6,8,3,2,3,1],
  [16,59,6,8,5,1,3,1],[16,58,6,8,5,1,3,2],[17,57,7,8,5,1,3,2],
  [14,58,7,9,6,1,3,2]];
 
