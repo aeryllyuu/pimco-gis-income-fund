@@ -54,7 +54,7 @@
 <div class="wrap">
   <header class="top">
     <h1>PIMCO GIS Income Fund — Monthly Dashboard</h1>
-    <p>E-Class USD Accumulation · ISIN IE00B7KFL990 · Source: PIMCO monthly reports · 15 months with data (Jan 2025 – Apr 2026)</p>
+    <p>E-Class USD Accumulation · ISIN IE00B7KFL990 · Source: PIMCO monthly reports · 16 months with data (Jan 2025 – May 2026)</p>
   </header>
 
   <div class="cards" id="cards"></div>
@@ -95,13 +95,13 @@
 </div>
 
 <script>
-const months=["Jan-25","Feb-25","Mar-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26"];
+const months=["Jan-25","Feb-25","Mar-25","May-25","Jun-25","Jul-25","Aug-25","Sep-25","Oct-25","Nov-25","Dec-25","Jan-26","Feb-26","Mar-26","Apr-26","May-26"];
 const methIdx=3; // first month under new (AA-dominant) reporting basis (May-25)
 
 const stats={
-  duration:[4.61,3.99,3.96,5.42,5.13,5.38,5.25,5.21,4.98,4.82,4.90,5.19,5.15,6.25,6.29],
-  ytm:[7.25,6.98,7.24,6.90,6.55,6.51,6.31,6.25,6.11,6.07,6.25,6.29,6.05,6.90,7.00],
-  ytd:[1.05,2.83,3.02,2.83,4.86,4.86,6.46,7.26,8.49,9.23,9.54,0.51,1.57,-0.96,-0.11]
+  duration:[4.61,3.99,3.96,5.42,5.13,5.38,5.25,5.21,4.98,4.82,4.90,5.19,5.15,6.25,6.29,6.31],
+  ytm:[7.25,6.98,7.24,6.90,6.55,6.51,6.31,6.25,6.11,6.07,6.25,6.29,6.05,6.90,7.00,6.83],
+  ytd:[1.05,2.83,3.02,2.83,4.86,4.86,6.46,7.26,8.49,9.23,9.54,0.51,1.57,-0.96,-0.11,0.51]
 };
 const allocLabels=["Government Related","Agency MBS","Securitized (non-Agcy)","Investment Grade Credit","High Yield","Bank Loan","Emerging Markets","Cash & Liquidity","Other"];
 const alloc=[
@@ -111,7 +111,8 @@ const alloc=[
  [14,33,15,12,4,1,5,15,0],[14,36,15,12,4,1,5,14,0],[12,35,14,12,4,1,6,17,0],
  [13,36,14,12,4,1,6,14,0],
  [13,37,13,12,5,1,6,11,0],[13,36,14,12,5,1,6,12,0],[14,36,13,12,5,1,6,12,0],
- [14,36,14,14,5,1,7,9,0]];
+ [14,36,14,14,5,1,7,9,0],
+ [14,36,14,15,5,1,7,7,0]];
 const qualLabels=["AAA","AA","A","BAA","BB","B","Below B","A1/P1"];
 const qual=[
  [64,8,7,10,3,4,3,1],[64,8,7,9,3,4,4,1],[64,8,7,10,4,2,4,1],
@@ -120,7 +121,8 @@ const qual=[
  [17,59,5,9,4,1,3,1],[15,61,6,8,3,2,3,2],[17,59,6,8,3,2,3,1],
  [19,57,6,8,3,2,3,1],
  [16,59,6,8,5,1,3,1],[16,58,6,8,5,1,3,2],[17,57,7,8,5,1,3,2],
- [14,58,7,9,6,1,3,2]];
+ [14,58,7,9,6,1,3,2],
+ [12,59,7,10,6,1,3,2]];
 
 const palette=["#1f3864","#3f76b5","#7bb0e0","#1a8754","#7fc29b","#b9a44a","#d98a3d","#9aa7b5","#c0392b"];
 const qpal=["#1f3864","#3f76b5","#7bb0e0","#2e8b6f","#88c4a6","#e0b54a","#dd8a3a","#b24a4a"];

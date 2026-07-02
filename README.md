@@ -11,7 +11,7 @@ Tracks the **PIMCO GIS Income Fund (E-Class USD Accumulation, ISIN IE00B7KFL990)
 - `PIMCO_GIS_Income_Tracker.xlsx` — spreadsheet version with charts, structured for adding future months.
 
 ## Data
-Figures read from PIMCO GIS Income Fund monthly reports. 15 months with data: Jan–Dec 2025 (no published report for Apr-25) and Jan–Apr 2026.
+Figures read from PIMCO GIS Income Fund monthly reports. 16 months with data: Jan–Dec 2025 (no published report for Apr-25) and Jan–May 2026.
 
 > **Methodology note:** In mid-2025 PIMCO changed its reporting (GMV% now includes interest-rate-swap notional). The dominant credit-quality bucket shifts from AAA (~64%) to AA (~58%), first appearing in the May 2025 report — a reporting change, not a portfolio change. Compare within each period.
 
